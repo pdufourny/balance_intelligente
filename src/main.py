@@ -44,6 +44,34 @@ def result():
     return
 
 
+@flask_app.route("/test_prediction", methods=["POST", "GET"])
+def test_pred():
+    print("inside /test_prediction")
+    if request.method == "POST":
+        print("inside /prediction : POST")
+        if "file" not in request.files:
+            return "No file part", 400
+        file = request.files["file"]
+        if file.filename == "":
+            return "No selected file", 400
+        if file:
+            # Sauvegarder le fichier ou effectuer des prédictions
+            file.save(f"{file.filename}")
+
+            return render_template(
+                "detected_product.html",
+                product_id=3,
+                product_name="produit de test",
+                product_weight="0.5",
+                product_price="10€",
+            )
+
+    if request.method == "GET":
+        print("inside /predict : GET")
+        return render_template("client_t.html")
+    return
+
+
 ############################################################
 # fastapi
 ############################################################
@@ -55,6 +83,13 @@ def read_main():
     return {"message": "Hello World from fastapi"}
 
 
+@fast_api_app.get("/pred")
+def get_pred():
+    # {{product_id}}  {{product_name}}    {{product_weight}}   {{product_price}}
+    return {"message": "In get_pred"}
+
+
+############################################################
 # keep this last before main()
 flask_app.wsgi_app = DispatcherMiddleware(
     flask_app.wsgi_app,
