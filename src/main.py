@@ -1,6 +1,8 @@
+from typing import Annotated
+
 import cv2
 from a2wsgi import ASGIMiddleware
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from flask import Flask, render_template, request
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
@@ -60,7 +62,7 @@ def test_pred():
 
             return render_template(
                 "detected_product.html",
-                product_id=3,
+                product_id="2",
                 product_name="produit de test",
                 product_weight="0.5",
                 product_price="10€",
@@ -83,10 +85,25 @@ def read_main():
     return {"message": "Hello World from fastapi"}
 
 
-@fast_api_app.get("/pred")
-def get_pred():
+@fast_api_app.post("/pred")
+def get_pred(
+    file: UploadFile,
+):  # optimize les acces, le fichier est gardé en RAM ( selon sa taille)
+
+    print("inside /pred with fastapi , received filname : ", file.filename)
+    with open(file.filename, "wb") as f:
+        f.write(file.file.read())
+    product_id = ("2",)
+    product_name = ("produit de test",)
+    product_weight = ("0.5",)
+    product_price = ("10€",)
     # {{product_id}}  {{product_name}}    {{product_weight}}   {{product_price}}
-    return {"message": "In get_pred"}
+    return {
+        "product_id": product_id,
+        "product_name": product_name,
+        "product_weight": product_weight,
+        "product_price": product_price,
+    }
 
 
 ############################################################
@@ -98,9 +115,13 @@ flask_app.wsgi_app = DispatcherMiddleware(
         "/fast": ASGIMiddleware(fast_api_app),
     },
 )
+# par defaut, appels vers flask
+# pour les appels fastapi, ajouter /fast/ dans l'url
+# curl -X POST http://127.0.0.1:6000/fast/pred -F "file=@/home/usr/code/pdufourny/balance_intelligente/data/kiwi_test.jpg"
+
 
 if __name__ == "__main__":
     init()
     flask_app = Flask(__name__)
     # flask_app.debug = True
-    flask_app.run(host="0.0.0.0", port=5000, debug=True)
+    flask_app.run(host="0.0.0.0", port=6000, debug=True)

@@ -2,7 +2,7 @@
 {% block content %}
 <div>
   <div>
-    <img src="../static/img/{{product_id}}.jpg" alt={{product_id}} width=300>
+    <img src="{{ url_for('static', filename='images/' + product_id + '.png') }}" alt="{{ product_name }}" width="600" height="200">
   </div>
   <div>
     <p>Product name: {{product_name}}</p>
