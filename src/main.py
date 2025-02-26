@@ -1,10 +1,14 @@
+import random
 from typing import Annotated
 
 import cv2
 from a2wsgi import ASGIMiddleware
 from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import FileResponse
 from flask import Flask, render_template, request
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
+from lib.ml import process_image
 
 ############################################################
 # setup flask app
@@ -93,21 +97,30 @@ def get_pred(
     print("inside /pred with fastapi , received filname : ", file.filename)
     with open(file.filename, "wb") as f:
         f.write(file.file.read())
-    product_id = ("2",)
-    product_name = ("produit de test",)
-    product_weight = ("0.5",)
-    product_price = ("10€",)
+
+    lst_product = process_image(file.filename)
+
     # {{product_id}}  {{product_name}}    {{product_weight}}   {{product_price}}
-    return {
-        "product_id": product_id,
-        "product_name": product_name,
-        "product_weight": product_weight,
-        "product_price": product_price,
-    }
+    return lst_product
+
+
+@fast_api_app.get("/img")
+def get_image(image_num: int):
+    print("inside /img with fastapi , asking for image_num : ", image_num)
+
+    # nb = random.randint(1, 10)
+    image_path = (
+        f"/home/usr/code/pdufourny/balance_intelligente/static/images/{image_num}.png"
+    )
+
+    print(image_path)
+    return FileResponse(image_path)
 
 
 ############################################################
 # keep this last before main()
+# ref https://fastapi.tiangolo.com/advanced/wsgi/
+############################################################
 flask_app.wsgi_app = DispatcherMiddleware(
     flask_app.wsgi_app,
     {

@@ -11,4 +11,5 @@ credentials
 *.zip
 *.jpg
 *.jpeg
+*.png
 models/
