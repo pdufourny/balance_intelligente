@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from flask import Flask, render_template, request
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-from lib.ml import process_image
+from lib.ml import load_models, process_image
 
 ############################################################
 # setup flask app
@@ -19,10 +19,6 @@ flask_app = Flask(
     template_folder="../templates",
     static_folder="../static",
 )
-
-
-def init():
-    print("starting")
 
 
 @flask_app.route("/", methods=["GET"])
@@ -135,6 +131,6 @@ flask_app.wsgi_app = DispatcherMiddleware(
 
 if __name__ == "__main__":
     init()
-    flask_app = Flask(__name__)
+    # flask_app = Flask(__name__)
     # flask_app.debug = True
     flask_app.run(host="0.0.0.0", port=6000, debug=True)
