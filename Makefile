@@ -8,8 +8,9 @@ setup:
 		echo "Creating virtualenv 'balance_intelligente' ..."; \
 		pyenv virtualenv 3.10.12 balance_intelligente; \
 		pyenv virtualenv allow; \
-		pyenv local balance_intelligente; \
 	fi
+	pyenv local balance_intelligente; \
+	mkdir models
 
 precommit_install:
 	@echo "Installing pre-commit hooks ..."
