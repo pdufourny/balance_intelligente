@@ -1,18 +1,20 @@
 # This project was generated with 0.3.22 using template: https://github.com/beeware/briefcase-template@v0.3.22
 [tool.briefcase]
-project_name = "Sim_Balance"
+project_name = "sim_balance"
 bundle = "com.example"
 version = "0.0.1"
-url = "http://cv.pdf-sites.fr"
+url = "https://example.com/sim_balance"
 license.file = "LICENSE"
-author = "P.Dufourny"
-author_email = "pdufourny@gmail.com"
+author = "Jane Developer"
+author_email = "jane@example.com"
+permission.camera = "App will take mugshots."
 
 [tool.briefcase.app.sim_balance]
-formal_name = "Sim_Balance"
-description = "simulateur de balance"
+formal_name = "sim_balance"
+description = "My first application"
 long_description = """More details about the app should go here.
 """
+permission.camera = "App will take mugshots."
 sources = [
     "src/sim_balance",
 ]
@@ -21,6 +23,7 @@ test_sources = [
 ]
 
 requires = [
+    "requests" #,"Pillow"     # pdf ajout accès à la lib request
 ]
 test_requires = [
     "pytest",
@@ -164,8 +167,17 @@ requires = [
 requires = [
     "toga-android~=0.4.7",
 ]
-
+meta_data = [
+    {name = "android.support.FILE_PROVIDER_PATHS", resource = "@xml/file_paths"}
+]
 base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+# Permissions nécessaires
+permissions = [
+    "CAMERA",
+    "WRITE_EXTERNAL_STORAGE",
+    "READ_EXTERNAL_STORAGE"
+]
+
 
 build_gradle_dependencies = [
     "com.google.android.material:material:1.12.0",

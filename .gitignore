@@ -13,3 +13,4 @@ credentials
 *.jpeg
 *.png
 models/
+sim_balance/build/

@@ -1,14 +1,15 @@
-import random
 from typing import Annotated
 
-import cv2
 from a2wsgi import ASGIMiddleware
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from lib.ml import load_models, process_image
+
+# from fastapi.middleware.wsgi import WSGIMiddleware
+
 
 ############################################################
 # setup flask app
@@ -23,6 +24,7 @@ flask_app = Flask(
 
 @flask_app.route("/", methods=["GET"])
 def iris_index():
+    print("inside /")
     return render_template("base_index.html")
 
 
@@ -104,12 +106,8 @@ def get_pred(
 def get_image(image_num: int):
     print("inside /img with fastapi , asking for image_num : ", image_num)
 
-    # nb = random.randint(1, 10)
-    image_path = (
-        f"/home/usr/code/pdufourny/balance_intelligente/static/images/{image_num}.png"
-    )
+    image_path = f"static/images/{image_num}.png"
 
-    print(image_path)
     return FileResponse(image_path)
 
 
@@ -117,10 +115,12 @@ def get_image(image_num: int):
 # keep this last before main()
 # ref https://fastapi.tiangolo.com/advanced/wsgi/
 ############################################################
+# fast_api_app.mount("/fast", WSGIMiddleware(flask_app))
+print("before mount")
 flask_app.wsgi_app = DispatcherMiddleware(
     flask_app.wsgi_app,
     {
-        "/flask": flask_app,
+        # "/flask": flask_app,
         "/fast": ASGIMiddleware(fast_api_app),
     },
 )
@@ -130,7 +130,7 @@ flask_app.wsgi_app = DispatcherMiddleware(
 
 
 if __name__ == "__main__":
-    init()
+
     # flask_app = Flask(__name__)
     # flask_app.debug = True
-    flask_app.run(host="0.0.0.0", port=6000, debug=True)
+    flask_app.run(host="0.0.0.0", port=9000, debug=True)
