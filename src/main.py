@@ -1,12 +1,14 @@
 from typing import Annotated
 
-from a2wsgi import ASGIMiddleware
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import FileResponse
-from flask import Flask, render_template, request, url_for
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
+# from a2wsgi import ASGIMiddleware
+# from fastapi import FastAPI, File, UploadFile
+# from fastapi.responses import FileResponse
+from flask import Flask, render_template, request, send_file, url_for
 
 from lib.ml import load_models, process_image
+
+# from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 
 # from fastapi.middleware.wsgi import WSGIMiddleware
 
@@ -26,6 +28,27 @@ flask_app = Flask(
 def iris_index():
     print("inside /")
     return render_template("base_index.html")
+
+
+# https://flask.palletsprojects.com/en/stable/patterns/fileuploads/
+@flask_app.route("/predict", methods=["POST"])
+def predict():
+    print("inside /predict")
+    file = request.files["file"]
+    file.save(f"'test_'+{file.filename}")
+
+    lst_product = process_image(file.filename)
+    return lst_product
+
+
+@flask_app.route("/img/<image_num>", methods=["GET"])
+def get_image(image_num):
+    print("inside /img with fastapi , asking for image_num : ", image_num)
+
+    image_path = f"../static/images/{image_num}.png"
+    # image_path = f"/home/usr/code/pdufourny/balance_intelligente/static/images/1.png"
+    print("image_path", image_path)
+    return send_file(image_path)
 
 
 @flask_app.route("/prediction", methods=["POST", "GET"])
@@ -61,13 +84,15 @@ def test_pred():
         if file:
             # Sauvegarder le fichier ou effectuer des prédictions
             file.save(f"{file.filename}")
-
+            lst_product = process_image(file.filename)
             return render_template(
                 "detected_product.html",
-                product_id="2",
-                product_name="produit de test",
-                product_weight="0.5",
-                product_price="10€",
+                product_id=str(lst_product["product_id"]),
+                product_name=lst_product["product_name"],
+                product_weight=str(lst_product["product_weight"]),
+                product_price=str(lst_product["product_price"]),
+                net_price=str(lst_product["net_price"]),
+                confiance=str(lst_product["confiance"]),
             )
 
     if request.method == "GET":
@@ -76,54 +101,6 @@ def test_pred():
     return
 
 
-############################################################
-# fastapi
-############################################################
-fast_api_app = FastAPI()
-
-
-@fast_api_app.get("/")
-def read_main():
-    return {"message": "Hello World from fastapi"}
-
-
-@fast_api_app.post("/pred")
-def get_pred(
-    file: UploadFile,
-):  # optimize les acces, le fichier est gardé en RAM ( selon sa taille)
-
-    print("inside /pred with fastapi , received filname : ", file.filename)
-    with open(file.filename, "wb") as f:
-        f.write(file.file.read())
-
-    lst_product = process_image(file.filename)
-
-    # {{product_id}}  {{product_name}}    {{product_weight}}   {{product_price}}
-    return lst_product
-
-
-@fast_api_app.get("/img")
-def get_image(image_num: int):
-    print("inside /img with fastapi , asking for image_num : ", image_num)
-
-    image_path = f"static/images/{image_num}.png"
-
-    return FileResponse(image_path)
-
-
-############################################################
-# keep this last before main()
-# ref https://fastapi.tiangolo.com/advanced/wsgi/
-############################################################
-# fast_api_app.mount("/fast", WSGIMiddleware(flask_app))
-print("before mount")
-flask_app.wsgi_app = DispatcherMiddleware(
-    flask_app.wsgi_app,
-    {
-        # "/flask": flask_app,
-        "/fast": ASGIMiddleware(fast_api_app),
-    },
-)
 # par defaut, appels vers flask
 # pour les appels fastapi, ajouter /fast/ dans l'url
 # curl -X POST http://127.0.0.1:6000/fast/pred -F "file=@/home/usr/code/pdufourny/balance_intelligente/data/kiwi_test.jpg"

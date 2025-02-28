@@ -55,7 +55,7 @@ def load_models():
     models = [
         (
             "Modèle 1",
-            YOLO("models/model1_YoloV8m_seg_fusionned.pt"),
+            YOLO("models/Model1-YoloV8m-seg-fusionned1.pt"),
         ),
         (
             "Modèle 2",
@@ -88,6 +88,8 @@ def get_predict(data_img):
     print("res", res)
     print("\nEnd prediction")
     item_id = int(res[0][1])
+    pred = float(res[0][0])
+    print("====> pred", pred)
     return item_id
 
 
@@ -95,10 +97,11 @@ def get_predict(data_img):
 def process_image(img):
     print("ENTER process_image", get_cur_time())
     print("appel model_triple ", get_cur_time())
-    item_id = get_predict_triple(img)
-    # item_id = mto_predict(img)
+    item_id, med_conf = get_predict_triple(img)
     print("fin appel get_predict_triple ", get_cur_time())
-    # item_id = get_predict(img)
+    # item_id,med_conf = mto_predict(img)
+    med_conf = round(med_conf, 2)
+    print(f"======={med_conf=}")
     product_name, product_price, product_type = get_product_info(item_id)
     product_weight = str(random.choice([100, 200, 300, 500]))
     net_price = float(product_price) * float(product_weight) / 1000
@@ -109,6 +112,7 @@ def process_image(img):
         "product_weight": product_weight,
         "product_price": product_price,
         "net_price": net_price,
+        "confiance": med_conf,
     }
 
 
@@ -170,8 +174,11 @@ def get_predict_triple(data_img):
     print("summary_results", summary_results)
     if len(summary_results) == 0:
         summary_results = [{"Classe": 99}]
+        summary_results = [{"Confiance médiane": 0}]
 
-    return int(summary_results[0]["Classe"])
+    return int(summary_results[0]["Classe"]), float(
+        summary_results[0]["Confiance médiane"]
+    )
 
 
 ####################################################################################################################
@@ -242,9 +249,10 @@ def mto_predict(img_path, weight=0):
     combined_input, img = preprocess_image_and_data(img_path, scaler, weight)
 
     predictions = model.predict(combined_input)
-
+    print(f"{predictions=}")
     fruit_variety = predictions[0]  # Class prediction (proba)
-    print(f"{fruit_variety}=")
+
+    print(f"{fruit_variety=}")
     # fruit_count = predictions[1] # Count prediction (regression)
 
     # Get predicted fruit variety (class with max probability)
@@ -252,7 +260,8 @@ def mto_predict(img_path, weight=0):
     predicted_fruit_type_index = np.argmax(fruit_variety, axis=1)[
         0
     ]  # Get class index with max probability
-    print(f"{predicted_fruit_type_index}=")
+    print(f"{predicted_fruit_type_index=}")
+    proba = fruit_variety[0][predicted_fruit_type_index]
     # predicted_fruit_type = class_mapping[predicted_fruit_type_index]
 
     # predicted_fruit_type_indices = np.argsort(fruit_variety, axis=1)[0, -2:]  # Get the indices of the two best predictions
@@ -264,4 +273,4 @@ def mto_predict(img_path, weight=0):
     # predicted_count_not_scaled = scaler.inverse_transform([[predicted_count_scaled, 0]])[0][0]
 
     # return predicted_fruit_type, predicted_count_not_scaled
-    return int(predicted_fruit_type_index)
+    return int(predicted_fruit_type_index), float(proba)

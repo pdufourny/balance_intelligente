@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
+
+</style>
+<div>
+  <h1 style="color:blue;text-align:center;font-size: 20px;">Produit détecté</h1>
+  <p style="font-size: 20px">Le produit suivant a été détecté:</p>
+</div>
+
 <div>
   <div>
-    <img src="{{ url_for('static', filename='images/' + product_id + '.png') }}" alt="{{ product_name }}" width="600" height="200">
+    <img style="display: block;margin-left: auto;margin-right: auto;width: 50%;" src="{{ url_for('static', filename='images/' + product_id + '.png') }}" alt="{{ product_name }}" width="600" height="200">
   </div>
   <div>
-    <p>Product name: {{product_name}}</p>
-    <p>Product category: {{product_weight}}</p>
-    <p>Product price: {{product_price}}</p>
+    <p style="font-size: 20px">Produit: {{product_name}}</p>
+    <p style="font-size: 20px">Poids: {{product_weight}}</p>
+    <p style="font-size: 20px">Prix au kilo: {{product_price}}</p>
+    <p style="font-size: 20px">Prix à payer : {{net_price}}</p>
+    <p style="font-size: 20px">Niveau de prédiction : {{confiance}}</p>
+  </div>
+  <div style="text-align: center; margin-top: 20px;">
+    <a href="http://127.0.0.1:7000/test_prediction" style="display: inline-block; padding: 10px 20px; font-size: 20px; font-weight: bold;  color: white; background-color: blue; text-align: center;  border-radius: 5px;">retour à la page précédente</a>
+  </div>
 </div>
 {% endblock %}
