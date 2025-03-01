@@ -35,7 +35,7 @@ def iris_index():
 def predict():
     print("inside /predict")
     file = request.files["file"]
-    file.save(f"'test_'+{file.filename}")
+    file.save(file.filename)
 
     lst_product = process_image(file.filename)
     return lst_product
@@ -46,7 +46,6 @@ def get_image(image_num):
     print("inside /img with fastapi , asking for image_num : ", image_num)
 
     image_path = f"../static/images/{image_num}.png"
-    # image_path = f"/home/usr/code/pdufourny/balance_intelligente/static/images/1.png"
     print("image_path", image_path)
     return send_file(image_path)
 
